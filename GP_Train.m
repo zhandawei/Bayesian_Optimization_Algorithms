@@ -1,4 +1,4 @@
-function model = Kriging_Train(sample_x,sample_y,lower_bound,upper_bound,theta0,theta_lower,theta_upper)
+function model = GP_Train(sample_x,sample_y,lower_bound,upper_bound,theta0,theta_lower,theta_upper)
 [n,num_vari]= size(sample_x);
 X = (sample_x - lower_bound)./(upper_bound - lower_bound);
 Y = sample_y;

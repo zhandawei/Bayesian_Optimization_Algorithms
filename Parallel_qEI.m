@@ -35,13 +35,13 @@ iteration = 0;
 % the current best solution
 fmin = min(sample_y);
 % print the current information to the screen
-fprintf('multi-point expected improvement on %d-D %s function, iteration: %d, evaluation: %d, current best solution: %f\n',num_vari,fun_name,iteration,evaluation,fmin);
+fprintf('qEI on %d-D %s function, iteration: %d, evaluation: %d, current best solution: %0.2f\n',num_vari,fun_name,iteration,evaluation,fmin);
 % the iteration
 while evaluation < max_evaluation
-    % build the Kriging model
-    kriging_model = Kriging_Train(sample_x,sample_y,lower_bound,upper_bound,1*ones(1,num_vari),0.001*ones(1,num_vari),1000*ones(1,num_vari));
+    % build the GP model
+    GP_model = GP_Train(sample_x,sample_y,lower_bound,upper_bound,1*ones(1,num_vari),0.001*ones(1,num_vari),1000*ones(1,num_vari));
     % maximize the qEI function
-    [best_x,max_EI]= Optimizer_GA(@(x)-Infill_qEI(x,kriging_model,fmin),num_vari*num_q,repmat(lower_bound,1,num_q),repmat(upper_bound,1,num_q),100,100);
+    [best_x,max_EI] = Optimizer_GA(@(x)-Infill_qEI(x,GP_model,fmin),num_vari*num_q,repmat(lower_bound,1,num_q),repmat(upper_bound,1,num_q),num_vari*num_q,100);
     infill_x = reshape(best_x,num_vari,[])';
     % evaluate the query points with the real function
     infill_y = feval(fun_name,infill_x);
@@ -53,6 +53,6 @@ while evaluation < max_evaluation
     iteration = iteration + 1;
     fmin = min(sample_y);
     % print the current information to the screen
-    fprintf('multi-point expected improvement on %d-D %s function, iteration: %d, evaluation: %d, current best solution: %f\n',num_vari,fun_name,iteration,evaluation,fmin);
+    fprintf('qEI on %d-D %s function, iteration: %d, evaluation: %d, current best solution: %0.2f\n',num_vari,fun_name,iteration,evaluation,fmin);
 end
 

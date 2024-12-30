@@ -1,12 +1,12 @@
-function obj = Infill_PEI(x,kriging_model,fmin,point_added)
+function obj = Infill_PEI(x,model,fmin,point_added)
 % the pseudo EI criterion
-% get the Kriging prediction and variance
-[u,s] = Kriging_Predictor(x,kriging_model);
+% get the GP prediction and variance
+[u,s] = GP_Predict(x,model);
 % calcuate the EI value
 EI = (fmin-u).*normcdf((fmin-u)./s)+s.*normpdf((fmin-u)./s);
-lower_bound = kriging_model.lower_bound;
-upper_bound = kriging_model.upper_bound;
-theta = kriging_model.theta;
+lower_bound = model.lower_bound;
+upper_bound = model.upper_bound;
+theta = model.theta;
 % if this is not the first infill point
 if ~isempty(point_added)
     % the scaling of x

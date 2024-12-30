@@ -1,0 +1,25 @@
+function obj = Infill_EIM_Matrix(x,kriging_obj,non_dominated_front)
+num_x = size(x,1);
+% number of non-dominated points,number of objectives
+[num_pareto,num_obj] = size(non_dominated_front);
+% the kriging prediction and varince
+u = zeros(num_x,num_obj);
+s = zeros(num_x,num_obj);
+for ii = 1 : num_obj
+    [u(:, ii),s(:, ii)] = GP_Predict(x, kriging_obj{ii});
+end
+
+
+f_matrix = repelem(non_dominated_front,num_x,1);
+
+
+
+
+u_matrix = repmat(u,num_pareto,1);
+s_matrix = repmat(s,num_pareto,1);
+
+
+EIM = (f_matrix - u_matrix).*normcdf((f_matrix - u_matrix)./s_matrix) + s_matrix.*normpdf((f_matrix - u_matrix)./s_matrix);
+y = min(reshape(sqrt(sum(EIM.^2,2))));
+obj = y;
+end

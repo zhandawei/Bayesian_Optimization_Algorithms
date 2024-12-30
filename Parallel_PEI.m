@@ -30,16 +30,16 @@ iteration = 0;
 % the current best solution
 fmin = min(sample_y);
 % print the current information to the screen
-fprintf('Pseuso EI on %d-D %s function, iteration: %d, evaluation: %d, current best solution: %f\n',num_vari,fun_name,iteration,evaluation,fmin);
+fprintf('Pseuso EI on %d-D %s function, iteration: %d, evaluation: %d, current best solution: %0.2f\n',num_vari,fun_name,iteration,evaluation,fmin);
 % the iteration
 while evaluation < max_evaluation 
-    % build the Kriging model
-    kriging_model = Kriging_Train(sample_x,sample_y,lower_bound,upper_bound,1*ones(1,num_vari),0.001*ones(1,num_vari),1000*ones(1,num_vari));
+    % build the GP model
+    GP_model = GP_Train(sample_x,sample_y,lower_bound,upper_bound,1*ones(1,num_vari),0.001*ones(1,num_vari),1000*ones(1,num_vari));
     infill_x = zeros(num_q,num_vari);
     point_added = [];
     for ii = 1: num_q
         % find the point with the highest pseudo EI value using GA algorithm
-        infill_x(ii,:) = Optimizer_GA(@(x)-Infill_PEI(x,kriging_model,fmin,point_added),num_vari,lower_bound,upper_bound,50,100);
+        infill_x(ii,:) = Optimizer_GA(@(x)-Infill_PEI(x,GP_model,fmin,point_added),num_vari,lower_bound,upper_bound,10*num_vari,200);
         % update point_added
         point_added = infill_x(1:ii,:);
     end
@@ -53,7 +53,7 @@ while evaluation < max_evaluation
     iteration = iteration + 1;
     fmin = min(sample_y);
     % print the current information to the screen
-    fprintf('Pseuso EI on %d-D %s function, iteration: %d, evaluation: %d, current best solution: %f\n',num_vari,fun_name,iteration,evaluation,fmin);
+    fprintf('Pseuso EI on %d-D %s function, iteration: %d, evaluation: %d, current best solution: %0.2f\n',num_vari,fun_name,iteration,evaluation,fmin);
 end
 
 

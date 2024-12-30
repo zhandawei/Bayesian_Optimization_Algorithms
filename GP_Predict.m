@@ -1,4 +1,4 @@
-function [u,s,Corr,Cov] = Kriging_Predictor(test_x,model)
+function [u,s,Corr,Cov] = GP_Predict(test_x,model)
 % parameters of Kriging model
 theta = model.theta;
 mu = model.mu;

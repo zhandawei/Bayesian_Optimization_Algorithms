@@ -1,5 +1,5 @@
 %--------------------------------------------------------------------------
-% This is the constant liar approach which always use the current minimum
+% This is the constant liar approach which always uses the current minimum
 % objective value as the fake objective to update the GP model to produce
 % multiple query points for parallel function evaluations. It is coded
 % based on the following work.
@@ -34,14 +34,14 @@ fmin = min(sample_y);
 fprintf('Constant Liar on %d-D %s function, iteration: %d, evaluation: %d, current best solution: %f\n',num_vari,fun_name,iteration,evaluation,fmin);
 % iterations
 while evaluation < max_evaluation
-    % build the Kriging model
-    kriging_model = Kriging_Train(sample_x,sample_y,lower_bound,upper_bound,1*ones(1,num_vari),0.001*ones(1,num_vari),1000*ones(1,num_vari));
+    % build the GP model
+    GP_model = GP_Train(sample_x,sample_y,lower_bound,upper_bound,1*ones(1,num_vari),0.001*ones(1,num_vari),1000*ones(1,num_vari));
     % maximize the EI function
     infill_x = zeros(num_q,num_vari);
     for ii = 1: num_q
-        [infill_x(ii,:),max_EI] = Optimizer_GA(@(x)-Infill_EI(x,kriging_model,fmin),num_vari,lower_bound,upper_bound,num_vari,100);
+        [infill_x(ii,:),max_EI] = Optimizer_GA(@(x)-Infill_EI(x,GP_model,fmin),num_vari,lower_bound,upper_bound,10*num_vari,200);
         % use fmin as the fake objective
-        kriging_model = Kriging_Train([sample_x;infill_x(1:ii,:)],[sample_y;fmin*ones(ii,1)],lower_bound,upper_bound,kriging_model.theta);
+        GP_model = GP_Train([sample_x;infill_x(1:ii,:)],[sample_y;fmin*ones(ii,1)],lower_bound,upper_bound,GP_model.theta);
     end
     % evaluate the query points with the real function
     infill_y = feval(fun_name,infill_x);

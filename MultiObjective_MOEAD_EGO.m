@@ -1,10 +1,20 @@
+%-------------------------------------------------------------------------
+% This is the matlab implementation of MOEA/D-EGO algorithm according to
+% the following work.
+% Reference:
+% Q. Zhang, W. Liu, E. Tsang, and B. Virginas. Expensive Multiobjective
+% Optimization by MOEA/D with Gaussian Process model. IEEE Transactions on
+% Evolutionary Computation. 2010, 14, 456-474.
+% Author: Dawei Zhan
+% Date:   2024/12/30
+%-------------------------------------------------------------------------
 clearvars;close all;
 % settings of the problem
-fun_name = 'Fun_DTLZ2';
+fun_name = 'DTLZ2';
 % number of objectives
 num_obj = 2;
 % number of design variables
-num_vari = 6;
+num_vari = 10;
 lower_bound = zeros(1,num_vari);
 upper_bound = ones(1,num_vari);
 % reference point for calculating hypervolume
@@ -12,7 +22,7 @@ ref_point = 2.5*ones(1,num_obj);
 % number of points evaluated in each iteration
 Ke = 5;
 % number of initial designs
-num_initial = 60;
+num_initial = 100;
 % maximum number of evaluations
 max_evaluation = 200;
 % initial sampling
@@ -32,15 +42,15 @@ weight = UniformPoint(n,num_obj);
 n = size(weight,1);
 iteration = 0;
 evaluation = size(sample_x,1);
-kriging_obj = cell(1,num_obj);
+GP_obj = cell(1,num_obj);
 index = Paretoset(sample_y);
 non_dominated_front = sample_y(index,:);
 hypervolume = Hypervolume(non_dominated_front,ref_point);
-fprintf('MOEA/D-EGO on %d-D %s function, iteration: %d, evaluation: %d, hypervolume: %f\n',num_vari,fun_name,iteration,evaluation,hypervolume);
+fprintf('MOEA/D-EGO on %d-D %s function, iteration: %d, evaluation: %d, hypervolume: %0.2f\n',num_vari,fun_name,iteration,evaluation,hypervolume);
 while evaluation < max_evaluation
     q = min(max_evaluation-evaluation,Ke);
     for ii = 1:num_obj
-        kriging_obj{ii} = Kriging_Train(sample_x,sample_y(:,ii),lower_bound,upper_bound,1*ones(1,num_vari),0.001*ones(1,num_vari),1000*ones(1,num_vari));
+        GP_obj{ii} = GP_Train(sample_x,sample_y(:,ii),lower_bound,upper_bound,1*ones(1,num_vari),0.001*ones(1,num_vari),1000*ones(1,num_vari));
     end
     % optimize n EIs using MOEA/D
     T = 20;
@@ -53,7 +63,7 @@ while evaluation < max_evaluation
     pop_s = zeros(n,num_obj);
     for ii = 1:n
         for jj = 1:num_obj
-            [pop_y(ii,jj),pop_s(ii,jj)] = Kriging_Predictor(pop_vari(ii,:),kriging_obj{jj});
+            [pop_y(ii,jj),pop_s(ii,jj)] = GP_Predict(pop_vari(ii,:),GP_obj{jj});
         end
         pop_EI(ii) =  Tchebycheff_EI(pop_y(ii,:),pop_s(ii,:),weight(ii,:),z,sample_y);
     end
@@ -79,7 +89,7 @@ while evaluation < max_evaluation
             offspring_y = zeros(1,num_obj);
             offspring_s = zeros(1,num_obj);
             for jj = 1:num_obj
-                [offspring_y(1,jj),offspring_s(1,jj)] = Kriging_Predictor(offspring,kriging_obj{jj});
+                [offspring_y(1,jj),offspring_s(1,jj)] = GP_Predict(offspring,GP_obj{jj});
             end
             offspring_EI = Tchebycheff_EI(offspring_y,offspring_s,weight(P,:),z,sample_y);
             replace_index = P(offspring_EI > pop_EI(P,:));
@@ -130,7 +140,7 @@ while evaluation < max_evaluation
     index = Paretoset(sample_y);
     non_dominated_front = sample_y(index,:);
     hypervolume = Hypervolume(non_dominated_front,ref_point);
-    fprintf('MOEA/D-EGO on %d-D %s function, iteration: %d, evaluation: %d, hypervolume: %f\n',num_vari,fun_name,iteration,evaluation,hypervolume);
+    fprintf('MOEA/D-EGO on %d-D %s function, iteration: %d, evaluation: %d, hypervolume: %0.2f\n',num_vari,fun_name,iteration,evaluation,hypervolume);
 end
 
 

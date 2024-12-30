@@ -31,16 +31,16 @@ iteration = 0;
 % the current best solution
 fmin = min(sample_y);
 % print the current information to the screen
-fprintf('Kriging Believer on %d-D %s function, iteration: %d, evaluation: %d, current best solution: %f\n',num_vari,fun_name,iteration,evaluation,fmin);
+fprintf('Kriging Believer on %d-D %s function, iteration: %d, evaluation: %d, current best solution: %0.2f\n',num_vari,fun_name,iteration,evaluation,fmin);
 % the iteration
 while evaluation < max_evaluation
-    % train the Kriging model
-    kriging_model = Kriging_Train(sample_x,sample_y,lower_bound,upper_bound,1*ones(1,num_vari),0.001*ones(1,num_vari),1000*ones(1,num_vari));
+    % train the GP model
+    GP_model = GP_Train(sample_x,sample_y,lower_bound,upper_bound,1*ones(1,num_vari),0.001*ones(1,num_vari),1000*ones(1,num_vari));
     infill_x = zeros(num_q,num_vari);
     for ii = 1: num_q
-        [infill_x(ii,:),max_EI] = Optimizer_GA(@(x)-Infill_EI(x,kriging_model,fmin),num_vari,lower_bound,upper_bound,num_vari,100);
-        % use kriging prediction as the fake objective
-        kriging_model = Kriging_Train([sample_x;infill_x(1:ii,:)],[sample_y;Kriging_Predictor(infill_x(1:ii,:),kriging_model)],lower_bound,upper_bound,kriging_model.theta);
+        [infill_x(ii,:),max_EI] = Optimizer_GA(@(x)-Infill_EI(x,GP_model,fmin),num_vari,lower_bound,upper_bound,10*num_vari,200);
+        % use GP prediction as the fake objective
+        GP_model = GP_Train([sample_x;infill_x(1:ii,:)],[sample_y;GP_Predict(infill_x(1:ii,:),GP_model)],lower_bound,upper_bound,GP_model.theta);
     end
     % evaluate the query points with the real function
     infill_y = feval(fun_name,infill_x);
@@ -52,7 +52,7 @@ while evaluation < max_evaluation
     iteration = iteration + 1;
     fmin = min(sample_y);
     % print the current information to the screen
-    fprintf('Kriging Believer on %d-D %s function, iteration: %d, evaluation: %d, current best solution: %f\n',num_vari,fun_name,iteration,evaluation,fmin);
+    fprintf('Kriging Believer on %d-D %s function, iteration: %d, evaluation: %d, current best solution: %0.2f\n',num_vari,fun_name,iteration,evaluation,fmin);
 end
 
 

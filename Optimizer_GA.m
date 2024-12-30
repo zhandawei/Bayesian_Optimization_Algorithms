@@ -5,10 +5,7 @@ generation = 1;
 % the initial generation
 pop_vari = lhsdesign(pop_size, num_vari).*(upper_bound - lower_bound) + lower_bound;
 % calculate the objective values
-pop_fitness = zeros(pop_size,1);
-for ii = 1:pop_size
-    pop_fitness(ii) = feval(obj_fun,pop_vari(ii,:));
-end
+pop_fitness = feval(obj_fun,pop_vari);
 % the evoluation of the generation
 while generation < max_gen
     % parent selection using k-tournament (default k=2) selection
@@ -46,10 +43,7 @@ while generation < max_gen
     pop_mutation = pop_crossover + detaq.*(upper_bound-lower_bound);
     pop_mutation  = max(min(pop_mutation,upper_bound),lower_bound);
     % fitness calculation
-    pop_mutation_fitness = zeros(pop_size,1);
-    for ii = 1:pop_size
-        pop_mutation_fitness(ii) = feval(obj_fun, pop_mutation(ii,:));
-    end
+    pop_mutation_fitness = feval(obj_fun, pop_mutation);
     % environment selection
     pop_vari_iter = [pop_vari;pop_mutation];
     pop_fitness_iter = [pop_fitness;pop_mutation_fitness];
